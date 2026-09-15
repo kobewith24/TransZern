@@ -1,0 +1,27 @@
+# Data and model checkpoints (not distributed; available upon reasonable request)
+datasets/
+models/
+model/
+result/
+results/
+eval_results/
+figures/results/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.ipynb_checkpoints/
+
+# Checkpoints and large binary files
+*.pth
+*.pt
+*.ckpt
+*.bmp
+*.tif
+*.tiff
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
