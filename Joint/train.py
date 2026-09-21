@@ -110,7 +110,7 @@ def train_joint(num_epochs=60, batch_size=4, save_dir="Joint/models"):
     full_dataset = JointDataset(data_dir="Joint/datasets", device=device)
     n = len(full_dataset)
     train_ds = Subset(full_dataset, range(int(0.7 * n)))
-    val_ds = Subset(full_dataset, range(int(0.7 * n), int(0.85 * n)))    # 0.7 0.85
+    val_ds = Subset(full_dataset, range(int(0.7 * n), int(0.9 * n)))    # 0.7 0.9
     
     train_loader = DataLoader(train_ds, batch_size=4, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_ds, batch_size=4, shuffle=False, num_workers=0)

@@ -129,8 +129,8 @@ def train_model(num_epochs=100, batch_size=16, num_modes=15, save_path=None, res
     writer = SummaryWriter(log_dir="ZernikeNet/logs_z", purge_step=start_epoch)
     
     full_dataset = PreGeneratedDataset(dataset_dir="ZernikeNet/datasets", device=device)
-    train_ds = Subset(full_dataset, range(8000))
-    val_ds = Subset(full_dataset, range(8000, 9000))
+    train_ds = Subset(full_dataset, range(7000))
+    val_ds = Subset(full_dataset, range(7000, 9000))
     
     train_loader = DataLoader(train_ds, batch_size=batch_size, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_ds, batch_size=batch_size, shuffle=False, num_workers=0)

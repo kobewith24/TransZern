@@ -82,7 +82,7 @@ def train_model(num_epochs=100, batch_size=8, save_path=None, resume_path=None):
     
     # 700张作为训练集, 200张作为验证集, 100张作为测试集
     full_dataset = RealToSimDataset()
-    train_dataset = Subset(full_dataset, range(700))    # 1600 200 200
+    train_dataset = Subset(full_dataset, range(700))    # 700 200 100
     val_dataset = Subset(full_dataset, range(700, 900))
     
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True, num_workers=0, pin_memory=False)
