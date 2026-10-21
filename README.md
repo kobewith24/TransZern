@@ -20,13 +20,22 @@ TransZern is a two-stage sensorless adaptive-optics framework for Laguerre-Gauss
 
 ## Data
 
-The datasets and trained model checkpoints are **not** distributed with this repository:
+The datasets are **not** distributed with this repository:
 
 - ConvertNet: 1,000 paired experimental/simulated distorted intensities (700/200/100 train/val/test)
 - ZernikeNet: 10,000 simulated intensity–coefficient pairs (7,000/2,000/1,000 train/val/test)
 - Independent experimental test set: 300 intensity distributions per topological charge ($l = 10, 20, 30$)
 
 They are available from the corresponding authors upon reasonable request.
+
+## Model weights
+
+Trained model weights (Git LFS) are included for the full TransZern model and the ablation baselines:
+
+- `Joint/models/best_u.pth`, `Joint/models/best_z.pth`: full TransZern model (ConvertNet + ZernikeNet)
+- `ExperimentalDataOnly/models/best_direct.pth`: Experimental Data Only baseline
+- `SimulatedDataOnly/models/best_sim_only.pth`: Simulated Data Only baseline
+- `WithoutPretraining/models/best_joint.pth`: w/o Individual Pretraining baseline
 
 ## Reproduction pipeline
 
