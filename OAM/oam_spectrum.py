@@ -132,13 +132,16 @@ def run_oam_analysis(l=20, grid_size=400, num_samples=10, device='cpu', out_dir=
     Run OAM spectrum analysis on ideal, aberrated, and corrected vortex beams.
 
     For each sample, random aberration coefficients are generated.  The
-    "corrected" case uses the ground-truth coefficients minus a small
-    residual prediction error to mimic a realistic TransZern output.
+    "corrected" case uses the ground-truth coefficients plus a per-mode
+    residual prediction error matching the measured regression accuracy
+    (0.052 x each mode's half-range).
     """
     os.makedirs(out_dir, exist_ok=True)
 
-    # Fixed small prediction error (mimics the trained network)
-    residual_noise_std = 0.05
+    # Per-mode residual std = 0.052 x mode half-range (measured regression scale)
+    mode_std = torch.tensor([0.0, 0.78, 0.78, 0.624, 0.624, 0.624,
+                             0.468, 0.468, 0.468, 0.468,
+                             0.312, 0.312, 0.312, 0.312, 0.312], device=device)
 
     purities = {'ideal': [], 'aberrated': [], 'corrected': []}
     spectra = []
@@ -154,8 +157,8 @@ def run_oam_analysis(l=20, grid_size=400, num_samples=10, device='cpu', out_dir=
         E_aber_input = add_aberration_to_field(E0, coeffs, grid_size=grid_size, device=device)
         E_aber = angular_spectrum_propagation(E_aber_input, device=device)
 
-        # Corrected field: predicted coeffs with small residual error
-        noise = torch.randn_like(coeffs) * residual_noise_std
+        # Corrected field: predicted coeffs with per-mode residual error
+        noise = torch.randn_like(coeffs) * mode_std
         predicted_coeffs = coeffs + noise
         # Do not correct piston
         predicted_coeffs[0] = 0.0
