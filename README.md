@@ -1,6 +1,6 @@
 # TransZern
 
-Official code for "TransZern: single-shot sensorless wavefront measurement and correction for vortex beams via sim-to-real domain translation" (submitted to *Optics Express*).
+Official code for "TransZern: single-shot sensorless wavefront correction for vortex beams via domain translation" (submitted to *Optics Express*).
 
 TransZern is a two-stage sensorless adaptive-optics framework for Laguerre-Gaussian (LG) vortex beams. A U-Net-based **ConvertNet** translates experimental intensity patterns into their simulated counterparts, and a ResNet-18-based **ZernikeNet** regresses 14 Zernike coefficients ($Z_2 \sim Z_{15}$, piston $Z_1$ fixed to zero). The two networks are first pretrained individually and then fine-tuned jointly.
 
@@ -56,4 +56,4 @@ Training configuration (batch size 4, AdamW, weight decay $10^{-5}$, learning ra
 
 If you use this code, please cite:
 
-> Q. Wang, X. Cheng, D. Sun, C. Zhang, P. Dai, Z. Gao, "TransZern: single-shot sensorless wavefront measurement and correction for vortex beams via sim-to-real domain translation," *Optics Express*, 2026. (submitted)
+> Q. Wang, X. Cheng, D. Sun, C. Zhang, P. Dai, Z. Gao, "TransZern: single-shot sensorless wavefront correction for vortex beams via domain translation," *Optics Express*, 2026. (submitted)
