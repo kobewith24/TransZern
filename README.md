@@ -56,4 +56,4 @@ Training configuration (batch size 4, AdamW, weight decay $10^{-5}$, learning ra
 
 If you use this code, please cite:
 
-> Q. Wang, X. Cheng, D. Sun, C. Zhang, P. Dai, Z. Gao, "TransZern: single-shot sensorless wavefront correction for vortex beams via domain translation," *Optics Express*, 2026. (submitted)
+> Q. Wang, X. Cheng, D. Sun, C. Zhang, Z. Gao, P. Dai, "TransZern: single-shot sensorless wavefront correction for vortex beams via domain translation," *Optics Express*, 2026. (submitted)
