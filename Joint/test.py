@@ -15,7 +15,7 @@ from utils import (
 )
 
 
-def test():    # 1300 ~ 1600
+def test():
     device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
     model_path = os.path.join("Joint/models", "final_joint.pth")
     model = JointAberrationCorrection().to(device)

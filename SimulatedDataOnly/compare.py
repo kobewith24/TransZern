@@ -90,68 +90,42 @@ def evaluate_models(joint_model_path, sim_only_model_path, data_dir="SimulatedDa
     
     # 准备数据（使用 JointDataset 包含亮度归一化，与 test.py 一致）
     dataset = JointDataset(data_dir="Joint/datasets", device=device)
-    n = len(dataset)
-    # 使用与 test.py 相同的测试集划分: range(1400, 1700)
+    # 使用与 Joint/test.py 相同的测试集划分
     test_ds = Subset(dataset, range(1700, 2000))
     test_loader = DataLoader(test_ds, batch_size=4, shuffle=False, num_workers=0)
     
-    print(f"Test set size: {len(test_ds)} (real experimental data, indices 1400-1699)\n")
+    print(f"Test set size: {len(test_ds)} (real experimental data, indices 1700-1999)\n")
     
-    # 评估
-    joint_rmses_per_sample = []
-    sim_only_rmses_per_sample = []
-    joint_rmses_per_mode = []
-    sim_only_rmses_per_mode = []
-    joint_zernike_losses = []
-    sim_only_zernike_losses = []
-    
-    ranges = torch.tensor([
-        15.0, 15.0, 12.0, 12.0, 12.0,
-        9.0, 9.0, 9.0, 9.0,
-        6.0, 6.0, 6.0, 6.0, 6.0
-    ]).to(device)
-    
-    for real_img, sim_img, coeffs in tqdm(test_loader, desc="Evaluating"):
-        # With ConvertNet: 实采 -> ConvertNet -> ZernikeNet
+
+    joint_predictions = []
+    sim_only_predictions = []
+    true_coefficients = []
+    for real_img, _, coeffs in tqdm(test_loader, desc="Evaluating"):
         _, joint_pred = joint_model(real_img)
-        joint_rmse_sample = compute_rmse(joint_pred, coeffs)
-        joint_rmses_per_sample.extend(joint_rmse_sample.cpu().numpy())
-        
-        joint_rmse_mode = compute_rmse_per_mode(joint_pred, coeffs)
-        joint_rmses_per_mode.append(joint_rmse_mode.cpu().numpy())
-        
-        joint_pred_norm = joint_pred[:, 1:15] / ranges
-        true_norm = coeffs[:, 1:15] / ranges
-        joint_zernike_loss = torch.mean((joint_pred_norm - true_norm) ** 2)
-        joint_zernike_losses.append(joint_zernike_loss.item())
-        
-        # Without ConvertNet: 实采 -> ZernikeNet(仅用仿真训练)
-        sim_only_pred = sim_only_model(real_img)
-        sim_only_rmse_sample = compute_rmse(sim_only_pred, coeffs)
-        sim_only_rmses_per_sample.extend(sim_only_rmse_sample.cpu().numpy())
-        
-        sim_only_rmse_mode = compute_rmse_per_mode(sim_only_pred, coeffs)
-        sim_only_rmses_per_mode.append(sim_only_rmse_mode.cpu().numpy())
-        
-        sim_only_pred_norm = sim_only_pred[:, 1:15] / ranges
-        sim_only_zernike_loss = torch.mean((sim_only_pred_norm - true_norm) ** 2)
-        sim_only_zernike_losses.append(sim_only_zernike_loss.item())
-    
+        joint_predictions.append(joint_pred.cpu())
+        sim_only_predictions.append(sim_only_model(real_img).cpu())
+        true_coefficients.append(coeffs.cpu())
+
+    joint_predictions = torch.cat(joint_predictions)
+    sim_only_predictions = torch.cat(sim_only_predictions)
+    true_coefficients = torch.cat(true_coefficients)
+    joint_rmses_per_sample = compute_rmse(joint_predictions, true_coefficients).numpy()
+    sim_only_rmses_per_sample = compute_rmse(sim_only_predictions, true_coefficients).numpy()
+
     # 统计结果 (per-sample RMSE)
     joint_rmse_mean_sample = np.mean(joint_rmses_per_sample)
     joint_rmse_std_sample = np.std(joint_rmses_per_sample)
     sim_only_rmse_mean_sample = np.mean(sim_only_rmses_per_sample)
     sim_only_rmse_std_sample = np.std(sim_only_rmses_per_sample)
     
-    # 统计结果 (per-mode RMSE average) - 与正文3.2节一致
-    joint_rmses_per_mode = np.array(joint_rmses_per_mode)
-    sim_only_rmses_per_mode = np.array(sim_only_rmses_per_mode)
-    joint_rmse_mean_mode = np.mean(joint_rmses_per_mode)
-    sim_only_rmse_mean_mode = np.mean(sim_only_rmses_per_mode)
-    
-    joint_zernike_mean = np.mean(joint_zernike_losses)
-    sim_only_zernike_mean = np.mean(sim_only_zernike_losses)
-    
+    # Pool all samples before taking each mode's square root.
+    joint_rmses_per_mode = compute_rmse_per_mode(joint_predictions, true_coefficients).numpy()
+    sim_only_rmses_per_mode = compute_rmse_per_mode(sim_only_predictions, true_coefficients).numpy()
+    joint_rmse_mean_mode = joint_rmses_per_mode.mean()
+    sim_only_rmse_mean_mode = sim_only_rmses_per_mode.mean()
+    joint_zernike_mean = np.mean(joint_rmses_per_mode ** 2)
+    sim_only_zernike_mean = np.mean(sim_only_rmses_per_mode ** 2)
+
     # 计算改进百分比 (使用 per-mode average，与正文一致)
     improvement_mode = (sim_only_rmse_mean_mode - joint_rmse_mean_mode) / sim_only_rmse_mean_mode * 100
     
@@ -185,8 +159,8 @@ def evaluate_models(joint_model_path, sim_only_model_path, data_dir="SimulatedDa
     modes = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5', 'Z6', 'Z7', 'Z8', 'Z9', 'Z10', 'Z11', 'Z12', 'Z13', 'Z14']
     detailed_mode = pd.DataFrame({
         'Mode': modes,
-        'Joint_RMSE': np.mean(joint_rmses_per_mode, axis=0),
-        'SimOnly_RMSE': np.mean(sim_only_rmses_per_mode, axis=0),
+        'Joint_RMSE': joint_rmses_per_mode,
+        'SimOnly_RMSE': sim_only_rmses_per_mode,
     })
     detailed_mode.to_csv("SimulatedDataOnly/results/detailed_per_mode.csv", index=False)
     print("Per-mode comparison saved to: SimulatedDataOnly/results/detailed_per_mode.csv")

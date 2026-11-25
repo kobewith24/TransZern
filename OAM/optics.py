@@ -1,5 +1,5 @@
 """
-Optical field propagation and LG vortex beam generation for OAM analysis.
+Optical field propagation and Gaussian-input vortex generation for OAM analysis.
 Self-contained; does not import from other project folders.
 """
 
@@ -51,7 +51,7 @@ def angular_spectrum_propagation(U_in, wavelength=532e-9, z=300e-3, L=6e-3, devi
 
 def generate_lg_vortex(grid_size=400, l=20, L=6e-3, w=2e-3, device='cpu', apply_aperture=True):
     """
-    Generate a Laguerre-Gaussian vortex beam waist-plane field.
+    Imprint a helical phase on a Gaussian input field at the modulator plane.
 
     Parameters
     ----------

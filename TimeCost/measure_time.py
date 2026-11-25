@@ -53,9 +53,9 @@ def main():
     output_dir = os.path.join(os.path.dirname(__file__), 'results')
     os.makedirs(output_dir, exist_ok=True)
 
-    # Load dataset (Joint 1300~1600, total 300 samples)
+    # Use the same 300 held-out samples as Joint/test.py.
     full_dataset = JointDataset(data_dir=data_dir, device='cpu')
-    test_dataset = Subset(full_dataset, range(1300, 1600))
+    test_dataset = Subset(full_dataset, range(1700, 2000))
     test_loader = DataLoader(test_dataset, batch_size=1, shuffle=False,
                              num_workers=0, pin_memory=False)
 

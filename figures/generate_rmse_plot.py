@@ -2,8 +2,6 @@ import numpy as np
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from matplotlib.patches import Polygon
-import matplotlib.font_manager as fm
 
 # Use Arial for all text to match paper figures
 plt.rcParams['font.family'] = 'sans-serif'
@@ -14,7 +12,7 @@ plt.rcParams['font.weight'] = 'normal'
 plt.rcParams['pdf.fonttype'] = 42
 plt.rcParams['ps.fonttype'] = 42
 
-# Data from Joint/results/rmse_per_mode.txt
+# Display labels use one-based Noll indices.
 modes = ['Z2', 'Z3', 'Z4', 'Z5', 'Z6', 'Z7', 'Z8',
          'Z9', 'Z10', 'Z11', 'Z12', 'Z13', 'Z14', 'Z15']
 
@@ -26,67 +24,25 @@ after = np.array([0.089770, 0.073027, 0.071666, 0.049031, 0.060328,
                   0.032012, 0.022485, 0.020065, 0.027955, 0.082423,
                   0.044895, 0.029089, 0.048209, 0.078547])
 
+# The arrays above follow the stored coefficient order (piston excluded).
+# Convert to Noll order for display, preserving each mode's two measurements.
+noll_order = np.array([2, 1, 4, 3, 5, 7, 8, 6, 9, 12, 13, 11, 14, 10]) - 1
+before = before[noll_order]
+after = after[noll_order]
+
 x = np.arange(len(modes))
 width = 0.35
 offset = 0.22
 
-# Broken axis: map actual values to evenly spaced display positions
-# Display ticks: 0, 0.05, 0.10, 0.15, [break], 0.50, 0.55, 0.60, 0.65
-# Each displayed tick interval has equal visual spacing.
-tick_values = np.array([0, 0.05, 0.10, 0.15, 0.50, 0.55, 0.60, 0.65, 0.70])
-break_idx = 3  # break between index 3 (0.15) and index 4 (0.50)
+# Keep each 0.05 interval uniformly spaced and reserve one interval for the break.
+tick_values = np.array([0, 0.05, 0.10, 0.15, 0.45, 0.50, 0.55, 0.60, 0.65])
+tick_positions = np.linspace(0, 1, len(tick_values))
 
 
-def build_transform(tick_values):
-    """Map actual y to display y where each tick interval has equal height."""
-    tick_values = np.asarray(tick_values)
-    n_segments = len(tick_values) - 1
-    # height of each visual segment
-    segment_height = 1.0 / n_segments
-    # break between index 3 (0.15) and index 4 (0.50)
-    break_idx = 3
+def transform_y(values):
+    """Map the displayed data ranges to the same coordinates as their ticks."""
+    return np.interp(values, tick_values, tick_positions)
 
-    def transform(y):
-        y = np.asarray(y, dtype=float)
-        out = np.empty_like(y)
-        for i in range(n_segments):
-            if i < break_idx:
-                mask = (y >= tick_values[i]) & (y <= tick_values[i + 1])
-                out[mask] = i * segment_height + \
-                    (y[mask] - tick_values[i]) / (tick_values[i + 1] - tick_values[i]) * segment_height
-            elif i == break_idx:
-                # broken segment: do not map any real data here
-                mask = (y > tick_values[i]) & (y < tick_values[i + 1])
-                out[mask] = np.nan
-            else:
-                mask = (y >= tick_values[i]) & (y <= tick_values[i + 1])
-                # skip one segment height for the break
-                out[mask] = (i + 1) * segment_height + \
-                    (y[mask] - tick_values[i]) / (tick_values[i + 1] - tick_values[i]) * segment_height
-        return out
-
-    def inv(pos):
-        """Map display y position back to tick label value."""
-        pos = np.asarray(pos, dtype=float)
-        out = np.empty_like(pos)
-        segment_height = 1.0 / n_segments
-        for i in range(n_segments):
-            if i < break_idx:
-                lo, hi = i * segment_height, (i + 1) * segment_height
-                mask = (pos >= lo) & (pos <= hi)
-                out[mask] = tick_values[i] + (pos[mask] - lo) / segment_height * (tick_values[i + 1] - tick_values[i])
-            elif i == break_idx:
-                continue
-            else:
-                lo, hi = (i + 1) * segment_height, (i + 2) * segment_height
-                mask = (pos >= lo) & (pos <= hi)
-                out[mask] = tick_values[i] + (pos[mask] - lo) / segment_height * (tick_values[i + 1] - tick_values[i])
-        return out
-
-    return transform, inv
-
-
-transform_y, inv_y = build_transform(tick_values)
 
 fig, ax = plt.subplots(figsize=(12, 5.5))
 
@@ -111,11 +67,18 @@ ax.text(len(modes) / 2, transform_y(mean_after) + 0.015,
         f'After Avg. RMSE = {mean_after:.3f}',
         color='#16A34A', fontsize=11, va='bottom', ha='center')
 
-# Y-tick positions: evenly spaced display positions for each tick
-yticks_pos = np.linspace(0, 1, len(tick_values))
-ax.set_yticks(yticks_pos[:-1].tolist() + [yticks_pos[-1]])
+# Draw the break on the left spine between the two displayed ranges.
+ax.set_yticks(tick_positions)
 ax.set_yticklabels([f'{v:.2f}' for v in tick_values], fontsize=9)
 ax.set_ylim(0, 1.0)
+ax.spines['left'].set_visible(False)
+break_low, break_high = tick_positions[3:5]
+break_height = break_high - break_low
+ax.plot([0, 0, 0.006, -0.006, 0.006, 0, 0],
+        [0, break_low, break_low + 0.25 * break_height,
+         (break_low + break_high) / 2, break_high - 0.25 * break_height,
+         break_high, 1],
+        color='black', linewidth=0.8, transform=ax.transAxes, clip_on=False)
 
 # Custom xtick labels with important modes annotated on two lines
 important = {2, 3, 4, 5, 6, 7, 8, 11}

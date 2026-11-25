@@ -1,63 +1,22 @@
-# 消融实验：Without ConvertNet
+# 消融实验：仅使用仿真训练
 
-本目录包含消融实验代码，用于验证 ConvertNet (Domain Conversion) 的有效性。
-
-## 实验设计
-
-- **With ConvertNet**: 实验光强 → ConvertNet → 仿真光强 → ZernikeNet → Zernike系数 (原方法)
-- **Without ConvertNet**: 实验光强 → ZernikeNet → Zernike系数 (消融方法)
-
-## 文件说明
-
-- `dataset.py`: 消融实验数据集，只加载实验光强和Zernike系数（跳过仿真光强）
-- `train.py`: 训练脚本，直接使用实验数据训练 ZernikeNet
-- `compare.py`: 对比脚本，同时评估有/无 ConvertNet 的效果
-- `datasets/`: 符号链接到 Joint/datasets/（包含 real_intensity 和 csv）
-- `results/`: 对比结果输出目录
+该基线使用仿真光强和对应的 Zernike 系数训练 ZernikeNet，并直接在实采光强上进行系数回归。对比脚本在同一组 Joint 测试样本上运行完整 TransZern 和仅仿真训练的基线。
 
 ## 使用步骤
 
-### 1. 训练消融模型（直接训练 ZernikeNet）
+在仓库根目录运行：
 
 ```bash
-cd /home/wangquan/Aberration_correction
-python SimulatedDataOnly/train.py
-```
-
-训练参数：
-- Epochs: 60
-- Batch size: 4
-- Learning rate: 1e-4 (cosine annealing)
-- Optimizer: AdamW (weight_decay=1e-5)
-- Loss: Zernike MSE + Regularization
-
-模型将保存在 `SimulatedDataOnly/models/best_direct.pth`
-
-### 2. 对比评估
-
-确保 Joint 模型已训练完成（`Joint/models/best_joint.pth` 存在），然后运行：
-
-```bash
-cd /home/wangquan/Aberration_correction
+python SimulatedDataOnly/train_sim_only.py
 python SimulatedDataOnly/compare.py
 ```
 
-输出：
-- `SimulatedDataOnly/results/ablation_comparison.csv`: 汇总对比表
-- `SimulatedDataOnly/results/detailed_comparison.csv`: 每个样本的详细对比
+对比脚本读取 `Joint/models/final_joint.pth` 和 `SimulatedDataOnly/models/final_sim_only.pth`，并使用 `Joint/datasets` 中按排序后零基下标 1700–1999 选取的 300 个测试样本。
 
-## 预期结果
+## 指标与输出
 
-如果 ConvertNet 有效，预期结果应为：
-- **With ConvertNet** 的 RMSE 显著低于 **Without ConvertNet**
-- 改进幅度预计在 30-60% 左右（取决于 domain gap 的大小）
+先汇总全部测试样本，计算每个非活塞模式的 RMSE，并除以该模式的系数半范围。论文使用这 14 个逐模式归一化 RMSE 的算术平均。脚本另行输出逐样本的指标。
 
-如果两者性能接近，说明：
-1. 实验数据与仿真数据的 domain gap 较小，ConvertNet 不是关键组件
-2. 或者 ZernikeNet 本身足够鲁棒，可以直接从实验光强中提取特征
-
-## 注意事项
-
-1. 训练消融模型时，使用的是与 Joint 训练相同的数据集划分（70% train, 15% val, 15% test）
-2. 对比时，两个模型在完全相同的测试集上评估，确保公平性
-3. 如果显存不足，可以在 `train.py` 中将 `batch_size` 调小（如改为 2）
+- `results/ablation_comparison.csv`：汇总结果。
+- `results/detailed_per_mode.csv`：按代码内部顺序给出的逐模式归一化 RMSE。
+- `results/detailed_comparison.csv`：逐样本对比结果。

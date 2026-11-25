@@ -12,7 +12,7 @@ ir_values = [0.129, 0.106, 0.085, 0.081]
 fig, ax1 = plt.subplots(figsize=(5.0, 3.6))
 
 # 绘制 ZR 折线（深蓝）- 点稍微小一点
-ax1.plot(sample_sizes, zr_values, 'o-', color='#1f4e79', linewidth=2, markersize=6, label='Zernike RMSE (ZR)', zorder=3)
+ax1.plot(sample_sizes, zr_values, 'o-', color='#1f4e79', linewidth=2, markersize=6, label='Mean per-mode nRMSE (ZR)', zorder=3)
 
 # 创建第二个 y 轴用于 IR - 点稍微小一点
 ax2 = ax1.twinx()
@@ -20,7 +20,7 @@ ax2.plot(sample_sizes, ir_values, 's-', color='#5b9bd5', linewidth=2, markersize
 
 # 设置坐标轴标签 (非加粗 Arial)
 ax1.set_xlabel('Number of Experimental Samples', fontsize=6.5)
-ax1.set_ylabel('Zernike RMSE (ZR)', fontsize=6.5, color='black')
+ax1.set_ylabel('Mean per-mode nRMSE (ZR)', fontsize=6.5, color='black')
 ax2.set_ylabel('Intensity RMSE (IR)', fontsize=6.5, color='black')
 
 # 设置 x 轴刻度
