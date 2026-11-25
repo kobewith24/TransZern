@@ -108,9 +108,8 @@ def train_joint(num_epochs=60, batch_size=4, save_dir="Joint/models"):
     
     # 数据集
     full_dataset = JointDataset(data_dir="Joint/datasets", device=device)
-    n = len(full_dataset)
-    train_ds = Subset(full_dataset, range(int(0.7 * n)))
-    val_ds = Subset(full_dataset, range(int(0.7 * n), int(0.9 * n)))    # 0.7 0.9
+    train_ds = Subset(full_dataset, range(1400))
+    val_ds = Subset(full_dataset, range(1400, 1700))
     
     train_loader = DataLoader(train_ds, batch_size=4, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_ds, batch_size=4, shuffle=False, num_workers=0)
@@ -227,9 +226,8 @@ def resume_training(checkpoint_path="Joint/models/checkpoint.pth", num_epochs=20
     loss_fn = JointLoss()
     
     full_dataset = JointDataset(data_dir="Joint/datasets", device=device)
-    n = len(full_dataset)
-    train_ds = Subset(full_dataset, range(int(0.7 * n)))
-    val_ds = Subset(full_dataset, range(int(0.7 * n), int(1.0 * n)))
+    train_ds = Subset(full_dataset, range(1400))
+    val_ds = Subset(full_dataset, range(1400, 1700))
     
     train_loader = DataLoader(train_ds, batch_size=4, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_ds, batch_size=4, shuffle=False, num_workers=0)
