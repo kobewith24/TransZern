@@ -96,10 +96,10 @@ def zernike_phase_from_coeffs(coeffs, grid_size=400, device='cpu'):
 def generate_aberration_phase(num_modes=15, grid_size=400, device='cpu'):
     coeffs = torch.zeros(num_modes, device=device)
     coeffs[0] = 0
-    coeffs[1:3] = torch.empty(2, device=device).uniform_(0, 15)
-    coeffs[3:6] = torch.empty(3, device=device).uniform_(0, 12)
-    coeffs[6:10] = torch.empty(4, device=device).uniform_(0, 9)
-    coeffs[10:15] = torch.empty(5, device=device).uniform_(0, 6)
+    coeffs[1:3] = torch.empty(2, device=device).uniform_(-15, 15)
+    coeffs[3:6] = torch.empty(3, device=device).uniform_(-12, 12)
+    coeffs[6:10] = torch.empty(4, device=device).uniform_(-9, 9)
+    coeffs[10:15] = torch.empty(5, device=device).uniform_(-6, 6)
     phase = zernike_phase_from_coeffs(coeffs, grid_size=grid_size, device=device)
     return phase, coeffs
 

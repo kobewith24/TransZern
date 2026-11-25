@@ -56,16 +56,16 @@ def generate_aberration_phase(num_modes=15, grid_size=400, device='cpu'):
     coeffs = torch.zeros(num_modes, device=device)
     coeffs[0] = 0
     
-    # 1阶倾斜 (Z1-Z2): (0,15)
-    coeffs[1:3] = torch.empty(2, device=device).uniform_(0, 15)
+    # 1阶倾斜 (Z1-Z2): (-15,15)
+    coeffs[1:3] = torch.empty(2, device=device).uniform_(-15, 15)
     
-    # 2阶离焦、像散 (Z3-Z5): (0,12)
-    coeffs[3:6] = torch.empty(3, device=device).uniform_(0, 12)
+    # 2阶离焦、像散 (Z3-Z5): (-12,12)
+    coeffs[3:6] = torch.empty(3, device=device).uniform_(-12, 12)
     
-    # 3阶彗差 (Z6-Z9): (0,9)
-    coeffs[6:10] = torch.empty(4, device=device).uniform_(0, 9)
+    # 3阶彗差 (Z6-Z9): (-9,9)
+    coeffs[6:10] = torch.empty(4, device=device).uniform_(-9, 9)
     
-    # 4阶高阶 (Z10-Z14): (0,6)
-    coeffs[10:15] = torch.empty(5, device=device).uniform_(0, 6)
+    # 4阶高阶 (Z10-Z14): (-6,6)
+    coeffs[10:15] = torch.empty(5, device=device).uniform_(-6, 6)
     phase = zernike_phase_from_coeffs(coeffs, grid_size=grid_size, device=device)
     return phase, coeffs
